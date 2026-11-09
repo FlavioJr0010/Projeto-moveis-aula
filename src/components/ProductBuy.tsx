@@ -6,6 +6,7 @@ import { brl, isCep, maskCep } from "@/lib/format";
 import { priceInfo, type CartLine } from "@/lib/pricing";
 import { addBusinessDays, fmtDate, type ShippingOption } from "@/lib/shipping";
 import { useCart } from "./CartProvider";
+import { MatchPanel } from "./MatchPanel";
 
 export function ProductBuy({ product }: { product: Product }) {
   const router = useRouter();
@@ -66,6 +67,8 @@ export function ProductBuy({ product }: { product: Product }) {
           ))}
         </div>
       </div>
+
+      <MatchPanel product={product} color={color} onPickColor={setColor} />
 
       {product.assemblyPrice > 0 && (
         <label className="ship-opt" style={{ alignItems: "center" }}>

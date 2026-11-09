@@ -5,6 +5,7 @@ import type { ProductWithPrice } from "@/lib/search";
 import { brl } from "@/lib/format";
 import { FREE_SHIPPING_FROM } from "@/lib/pricing";
 import { Stars } from "./Stars";
+import { MatchBadge } from "./MatchBadge";
 
 export function ProductCard({ p, fits, priority }: { p: ProductWithPrice; fits?: boolean; priority?: boolean }) {
   const { info } = p;
@@ -22,6 +23,7 @@ export function ProductCard({ p, fits, priority }: { p: ProductWithPrice; fits?:
         <Stars rating={p.rating} count={p.reviews} />
         <span className="dims">{p.dims.w} × {p.dims.d} × {p.dims.h} cm (L×P×A)</span>
         {fits && <span className="fit-yes">✓ Cabe no seu espaço</span>}
+        <MatchBadge slug={p.slug} />
         <div style={{ marginTop: "auto" }}>
           <div className="price-old">{brl(info.listPrice)}</div>
           <div className="price">{brl(info.price)}</div>

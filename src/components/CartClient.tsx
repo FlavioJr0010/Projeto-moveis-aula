@@ -7,6 +7,7 @@ import { brl, isCep, maskCep } from "@/lib/format";
 import { FREE_SHIPPING_FROM, lineKey, priceCart } from "@/lib/pricing";
 import { estimateShipping } from "@/lib/shipping";
 import { useCart } from "./CartProvider";
+import { CartHarmony } from "./CartHarmony";
 
 export function CartClient() {
   const { lines, ready, setQty, remove, toggleAssembly, cep, setCep } = useCart();
@@ -35,6 +36,7 @@ export function CartClient() {
             : <p style={{ margin: "0 0 8px" }} className="save">🎉 Você ganhou frete grátis (SP, Sul e Sudeste)!</p>}
           <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={FREE_SHIPPING_FROM} aria-valuenow={Math.min(cart.merchandise, FREE_SHIPPING_FROM)}><i style={{ width: `${Math.min(100, (cart.merchandise / FREE_SHIPPING_FROM) * 100)}%` }} /></div>
         </div>
+        <CartHarmony lines={cart.lines} part="summary" />
         <div className="card">
           {cart.lines.map((l) => {
             const key = lineKey(l);
@@ -60,6 +62,7 @@ export function CartClient() {
             );
           })}
         </div>
+        <CartHarmony lines={cart.lines} part="suggest" />
       </div>
 
       <aside className="summary" aria-label="Resumo do pedido">

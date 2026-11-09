@@ -18,6 +18,7 @@ npm run typecheck
 ## O que já existe
 
 - **Cabe no meu espaço**: filtro por medida do vão e planta baixa em escala na página do produto (com checagem de porta/elevador)
+- **Combina ou não?** Enquanto você compra, o site avalia cada produto contra o carrinho (estilo, harmonia de cores, ambiente, repetição de peça, espaço e kits) e mostra o resultado nos cards, na página do produto (muda com a cor escolhida) e no carrinho. Regras em `src/lib/match.ts`; API em `/api/combina`
 - **Quiz de estilo** e **ambientes completos** com desconto no conjunto
 - **Preço final transparente**: produto + montagem + frete antes do carrinho
 - Carrinho (salvo no navegador), checkout com Pix, cartão e boleto simulados, confirmação do pedido
