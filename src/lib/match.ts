@@ -6,6 +6,7 @@ export interface Reason { level: Level; text: string }
 export interface MatchResult { score: number; level: Level; label: string; reasons: Reason[] }
 export interface CartItem { slug: string; color: string }
 
+const onlyHome = (p: Product) => p.contextos.length === 1 && p.contextos[0] === "residencial";
 const SINGLE_USE: Record<string, string> = { sofas: "um sofá", camas: "uma cama", mesas: "uma mesa" };
 const hexOf = (p: Product, color: string) => (p.colors.find((c) => c.name === color) ?? p.colors[0]).hex;
 
@@ -48,7 +49,7 @@ export function evaluateMatch(slug: string, color: string, cart: CartItem[]): Ma
   let score = 65;
 
   // 1) repetição de peça de uso único (2 sofás, 2 camas...)
-  const dup = others.find((o) => o.p.category === p.category && SINGLE_USE[p.category]);
+  const dup = others.find((o) => o.p.category === p.category && SINGLE_USE[p.category] && onlyHome(p) && onlyHome(o.p));
   if (dup) { score -= 30; reasons.push({ level: "bad", text: `Você já tem ${SINGLE_USE[p.category]} no carrinho (${short(dup.p)}).` }); }
 
   if (distinct.length) {

@@ -8,7 +8,7 @@ export function GET(req: Request) {
   return NextResponse.json({
     total: list.length,
     items: list.slice(0, limit).map((p) => ({
-      slug: p.slug, name: p.name, category: p.category, image: p.images[0],
+      slug: p.slug, name: p.name, category: p.category, subcategoria: p.subcategoria, contextos: p.contextos, image: p.images[0],
       price: p.info.price, pix: p.info.pix, dims: p.dims,
     })),
   });

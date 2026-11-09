@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { bundles, bySlug, categories, products } from "@/data/products";
+import { ambientesList, bundles, bySlug, categories, contextosList, products } from "@/data/products";
 import { searchProducts } from "@/lib/search";
 import { Gallery } from "@/components/Gallery";
 import { ProductBuy } from "@/components/ProductBuy";
@@ -63,7 +63,10 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
               <tr><th>Altura</th><td>{p.dims.h} cm</td></tr>
               <tr><th>Peso</th><td>{p.weightKg} kg</td></tr>
               <tr><th>Materiais</th><td>{p.material}</td></tr>
-              <tr><th>Estilo</th><td style={{ textTransform: "capitalize" }}>{p.style}</td></tr>
+              <tr><th>Uso</th><td>{p.contextos.map((c) => contextosList.find((x) => x.slug === c)?.label).join(", ")}</td></tr>
+              <tr><th>Ambientes</th><td>{p.ambientes.map((a) => ambientesList.find((x) => x.slug === a)?.label ?? a).join(", ")}</td></tr>
+              <tr><th>Estilo</th><td style={{ textTransform: "capitalize" }}>{p.visual.estilos.join(", ")}</td></tr>
+              <tr><th>Acabamento</th><td style={{ textTransform: "capitalize" }}>{p.visual.acabamento}</td></tr>
               <tr><th>Garantia</th><td>3 anos (demo)</td></tr>
             </tbody></table>
           </div>

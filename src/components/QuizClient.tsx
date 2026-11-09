@@ -45,7 +45,7 @@ export function QuizClient() {
   const bundle = [...bundles]
     .map((b) => ({ b, score: (b.perfil === a.perfil ? 3 : 0) + (b.ambiente === a.ambiente ? 3 : 0) + (bundleTotal(b) <= budget ? 2 : -2) }))
     .sort((x, y) => y.score - x.score)[0]?.b;
-  const picks = searchProducts({})
+  const picks = searchProducts({ contexto: "residencial" })
     .map((p) => ({ p, score: (p.perfis.includes(a.perfil!) ? 3 : 0) + (a.ambiente === "casa" || p.ambientes.includes(a.ambiente as Ambiente) ? 3 : 0) + (p.style === a.style ? 2 : 0) + (p.price <= budget / 2 ? 1 : 0) + p.rating / 10 }))
     .sort((x, y) => y.score - x.score).slice(0, 4).map((x) => x.p);
   const info = bundle ? priceInfo({ listPrice: bundleTotal(bundle) / (1 - bundle.discountPct / 100), price: bundleTotal(bundle) }) : null;

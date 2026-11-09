@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ambientesList, categories, perfisList } from "@/data/products";
+import { ambientesList, categories, contextosList, perfisList } from "@/data/products";
 import { parseParams, searchProducts } from "@/lib/search";
 import { ProductCard } from "@/components/ProductCard";
 import { FiltersPanel } from "@/components/FiltersPanel";
@@ -20,6 +20,7 @@ export default async function Produtos({ searchParams }: { searchParams: Promise
   const chips: { label: string; key: string }[] = [];
   if (params.q) chips.push({ label: `“${params.q}”`, key: "q" });
   if (params.categoria) chips.push({ label: categories.find((c) => c.slug === params.categoria)?.label ?? params.categoria, key: "categoria" });
+  if (params.contexto) chips.push({ label: contextosList.find((a) => a.slug === params.contexto)?.label ?? params.contexto, key: "contexto" });
   if (params.ambiente) chips.push({ label: ambientesList.find((a) => a.slug === params.ambiente)?.label ?? "", key: "ambiente" });
   if (params.perfil) chips.push({ label: perfisList.find((a) => a.slug === params.perfil)?.label ?? "", key: "perfil" });
   if (params.min || params.max) chips.push({ label: `Preço ${params.min ?? 0} – ${params.max ?? "∞"}`, key: "preco" });
@@ -54,6 +55,12 @@ export default async function Produtos({ searchParams }: { searchParams: Promise
                 <div><label htmlFor="f-d">Prof.</label><input id="f-d" name="d" className="field" inputMode="numeric" defaultValue={params.d ?? ""} placeholder="cm" /></div>
                 <div><label htmlFor="f-h">Alt.</label><input id="f-h" name="h" className="field" inputMode="numeric" defaultValue={params.h ?? ""} placeholder="cm" /></div>
               </div>
+            </fieldset>
+            <fieldset>
+              <legend>Uso</legend>
+              <select name="contexto" className="field" defaultValue={params.contexto ?? ""} aria-label="Uso: casa, home office ou empresa">
+                <option value="">Casa, home office e empresa</option>{contextosList.map((c) => <option key={c.slug} value={c.slug}>{c.label}</option>)}
+              </select>
             </fieldset>
             <fieldset>
               <legend>Categoria</legend>

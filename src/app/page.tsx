@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { bundles, categories, img, bySlug } from "@/data/products";
+import { bundles, categories, contextosList, img, bySlug } from "@/data/products";
 import { searchProducts } from "@/lib/search";
 import { priceInfo } from "@/lib/pricing";
 import { brl } from "@/lib/format";
@@ -11,6 +11,7 @@ import { HomeIcon, LeafIcon, PixIcon, RulerIcon, ShieldIcon, SparkIcon, TagIcon,
 const catImg: Record<string, string> = {
   sofas: "1555041469-a586c61ea9bc", poltronas: "1586023492125-27b2c045efd7", camas: "1540518614846-7eded433c457",
   mesas: "1519710164239-da123dc03ef4", armarios: "1594026112284-02bb6f3352fe", complementos: "1503602642458-232111445657",
+  cadeiras: "1580480055273-228ff5388ef8", estantes: "1600494603989-9650cf6ddd3d", balcoes: "1524758631624-e2822e304c36",
 };
 
 export default function Home() {
@@ -35,6 +36,19 @@ export default function Home() {
         <div><WrenchIcon /><span><b>Montagem opcional</b>escolha no carrinho</span></div>
         <div><ShieldIcon /><span><b>30 dias para trocar</b>sem burocracia (demo)</span></div>
       </div>
+
+      <section className="section tight">
+        <div className="container">
+          <div className="section-head"><div><h2>O que você quer mobiliar?</h2><p className="muted">Escolha o seu caso e veja só o que faz sentido para ele.</p></div></div>
+          <div className="grid cols-3 stack">
+            {contextosList.map((c) => (
+              <Link key={c.slug} href={`/produtos?contexto=${c.slug}`} className="card idea">
+                <h3>{c.label}</h3><p className="muted small">{c.desc}</p><span className="btn sm ghost">Ver móveis</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="section tight">
         <div className="container">

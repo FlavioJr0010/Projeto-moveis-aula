@@ -5,6 +5,7 @@ export interface SearchParams {
   q?: string;
   categoria?: string;
   ambiente?: string;
+  contexto?: string; // residencial | home-office | comercial
   perfil?: string;
   min?: number;
   max?: number;
@@ -23,10 +24,11 @@ export function searchProducts(p: SearchParams): ProductWithPrice[] {
   const q = p.q ? norm(p.q).split(/\s+/).filter(Boolean) : [];
   let list = products.filter((x) => {
     if (q.length) {
-      const hay = norm(`${x.name} ${x.short} ${x.category} ${x.material} ${x.style} ${x.ambientes.join(" ")}`);
+      const hay = norm(`${x.name} ${x.short} ${x.category} ${x.subcategoria} ${x.material} ${x.style} ${x.ambientes.join(" ")} ${x.contextos.join(" ")} ${x.visual.estilos.join(" ")} ${x.visual.tags.join(" ")}`);
       if (!q.every((t) => hay.includes(t))) return false;
     }
     if (p.categoria && x.category !== p.categoria) return false;
+    if (p.contexto && !x.contextos.includes(p.contexto as never)) return false;
     if (p.ambiente && !x.ambientes.includes(p.ambiente as never)) return false;
     if (p.perfil && !x.perfis.includes(p.perfil as never)) return false;
     if (p.min !== undefined && x.price < p.min) return false;
@@ -60,6 +62,7 @@ export function parseParams(get: (k: string) => string | null | undefined): Sear
     q: get("q") || undefined,
     categoria: get("categoria") || undefined,
     ambiente: get("ambiente") || undefined,
+    contexto: get("contexto") || undefined,
     perfil: get("perfil") || undefined,
     min: num(get("min")), max: num(get("max")),
     w: num(get("w")), d: num(get("d")), h: num(get("h")),
