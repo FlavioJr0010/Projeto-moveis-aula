@@ -57,11 +57,28 @@ export interface CartTotals {
   count: number;
 }
 
+/** Valida uma linha vinda do cliente (nunca confiar no que chega do navegador). */
+export function isValidLine(l: unknown): l is CartLine {
+  if (!l || typeof l !== "object") return false;
+  const x = l as Partial<CartLine>;
+  if (typeof x.slug !== "string" || typeof x.color !== "string") return false;
+  if (typeof x.qty !== "number" || !Number.isInteger(x.qty) || x.qty < 1) return false;
+  if (typeof x.assembly !== "boolean") return false;
+  const product = bySlug(x.slug);
+  if (!product || !product.colors.some((c) => c.name === x.color)) return false;
+  if (x.bundle !== undefined) {
+    const b = typeof x.bundle === "string" ? bundleBySlug(x.bundle) : undefined;
+    if (!b || !b.items.some((i) => i.slug === x.slug)) return false;
+  }
+  return true;
+}
+
+/** Linhas inválidas são descartadas (ex.: carrinho antigo no localStorage). */
 export function priceCart(lines: CartLine[]): CartTotals {
   const priced: PricedLine[] = [];
-  for (const l of lines) {
-    const product = bySlug(l.slug);
-    if (!product || l.qty < 1) continue;
+  for (const l of Array.isArray(lines) ? lines : []) {
+    if (!isValidLine(l)) continue;
+    const product = bySlug(l.slug)!;
     const qty = Math.min(l.qty, product.stock, 20);
     const bundle = l.bundle ? bundleBySlug(l.bundle) : undefined;
     const pct = bundle ? bundle.discountPct / 100 : 0;

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { computeOrder, type PayMethod } from "@/lib/checkout";
-import type { CartLine } from "@/lib/pricing";
+import { isValidLine, type CartLine } from "@/lib/pricing";
 import { isCep } from "@/lib/format";
 import { addBusinessDays } from "@/lib/shipping";
 import { randomBytes } from "node:crypto";
@@ -27,7 +27,11 @@ export async function POST(req: Request) {
   if (!a.rua || !a.numero || !a.bairro || !a.cidade || !a.uf) return fail("Complete o endereço.", "rua");
   if (!pay.method || !["pix", "cartao", "boleto"].includes(pay.method)) return fail("Escolha a forma de pagamento.");
 
-  const calc = computeOrder(Array.isArray(b.items) ? b.items : [], a.cep as string, b.shippingId ?? "", pay.method, pay.installments);
+  const items = Array.isArray(b.items) ? b.items : [];
+  if (!items.length) return fail("Carrinho vazio");
+  if (!items.every(isValidLine)) return fail("Itens do carrinho inválidos. Atualize o carrinho e tente de novo.");
+
+  const calc = computeOrder(items, a.cep as string, b.shippingId ?? "", pay.method, pay.installments);
   if (calc.error !== undefined) return fail(calc.error);
 
   // Simulação de gateway: cartão final 0002 é recusado (cartão de teste 4000 0000 0000 0002).

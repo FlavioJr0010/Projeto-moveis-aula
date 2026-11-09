@@ -11,6 +11,11 @@ import { useCart } from "./CartProvider";
 const UFS = "AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO".split(" ");
 type Errors = Record<string, string>;
 
+// Definido fora de CheckoutClient: se fosse criado a cada render, o React recriaria os inputs e o foco se perderia a cada tecla.
+function Field({ id, label, cls = "s6", err, children }: { id: string; label: string; cls?: string; err?: string; children: React.ReactNode }) {
+  return <div className={cls}><label htmlFor={`c-${id}`} className="small">{label}</label>{children}{err && <div className="err" role="alert">{err}</div>}</div>;
+}
+
 export function CheckoutClient() {
   const { lines, ready, cep, setCep, clear } = useCart();
   const router = useRouter();
@@ -87,9 +92,6 @@ export function CheckoutClient() {
     finally { setBusy(false); }
   };
 
-  const Field = ({ id, label, cls = "s6", err, children }: { id: string; label: string; cls?: string; err?: string; children: React.ReactNode }) => (
-    <div className={cls}><label htmlFor={`c-${id}`} className="small">{label}</label>{children}{err && <div className="err" role="alert">{err}</div>}</div>
-  );
   const txt = (id: keyof typeof f, extra: React.InputHTMLAttributes<HTMLInputElement> = {}) => (
     <input id={`c-${id}`} className="field" value={f[id]} onChange={set(id)} aria-invalid={!!errors[id]} {...extra} />
   );
