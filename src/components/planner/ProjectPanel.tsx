@@ -4,6 +4,7 @@ import Link from "next/link";
 import { bySlug } from "@/data/products";
 import { useCart } from "@/components/CartProvider";
 import { brl } from "@/lib/format";
+import { publishPlan } from "@/lib/planner/cloud";
 import { saveProject } from "@/lib/planner/storage";
 import { usePlanner } from "@/lib/planner/store";
 import { planLines, planTotal } from "@/lib/planner/totals";
@@ -15,10 +16,21 @@ export function ProjectPanel({ alerts }: { alerts: PlanAlert[] }) {
   const { select, remove, rename, close } = usePlanner.getState();
   const cart = useCart();
   const [msg, setMsg] = useState<string | null>(null);
+  const [link, setLink] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const total = planTotal(plan.items);
   const errors = alerts.filter((a) => a.level === "erro").length;
 
   const save = () => setMsg(saveProject(plan) ? "Projeto salvo neste aparelho." : "Não foi possível salvar (armazenamento indisponível).");
+  const share = async () => {
+    setBusy(true); setMsg(null); setLink(null);
+    const r = await publishPlan(plan);
+    setBusy(false);
+    if (!r.ok) return setMsg(r.error);
+    setLink(r.url);
+    try { await navigator.clipboard.writeText(r.url); setMsg("Link copiado! Quem abrir verá uma cópia do projeto."); }
+    catch { setMsg("Link pronto. Copie o endereço abaixo."); }
+  };
   const toCart = () => { cart.addMany(planLines(plan.items)); setMsg(null); };
   const reset = () => { if (!plan.items.length || window.confirm("Fechar este ambiente? Salve o projeto antes para não perder os móveis.")) close(); };
 
@@ -64,7 +76,9 @@ export function ProjectPanel({ alerts }: { alerts: PlanAlert[] }) {
 
       <div style={{ display: "grid", gap: 8 }}>
         <button type="button" className="btn accent block" disabled={!plan.items.length} onClick={toCart}>Adicionar tudo ao carrinho</button>
-        <button type="button" className="btn block" onClick={save}>Salvar projeto</button>
+        <button type="button" className="btn block" onClick={save}>Salvar neste aparelho</button>
+        <button type="button" className="btn ghost block" onClick={share} disabled={busy || !plan.items.length}>{busy ? "Gerando link…" : "Compartilhar por link"}</button>
+        {link && <input className="field" readOnly value={link} aria-label="Link do projeto" onFocus={(e) => e.currentTarget.select()} />}
         <button type="button" className="btn ghost block" onClick={reset}>Novo ambiente</button>
         <Link className="small muted center" href="/carrinho">Ir para o carrinho</Link>
       </div>

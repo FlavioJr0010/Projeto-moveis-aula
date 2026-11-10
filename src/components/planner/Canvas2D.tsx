@@ -36,7 +36,9 @@ function usePalette() {
 export default function Canvas2D({ errorIds }: { errorIds: Set<string> }) {
   const plan = usePlanner((s) => s.plan)!;
   const selectedId = usePlanner((s) => s.selectedId);
-  const { select, moveTo, rotate, remove, nudge } = usePlanner.getState();
+  const { select, moveTo, rotate, remove, nudge, undo, redo } = usePlanner.getState();
+  const canUndo = usePlanner((s) => s.history.past.length > 0);
+  const canRedo = usePlanner((s) => s.history.future.length > 0);
   const pal = usePalette();
   const { room } = plan;
 
@@ -113,6 +115,8 @@ export default function Canvas2D({ errorIds }: { errorIds: Set<string> }) {
   const fs = clamp(12 / (view?.scale ?? 1), 4, 40);
 
   const onKey = (e: React.KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") { e.preventDefault(); redo(); return; }
     if (!selectedId) return;
     const step = 10;
     const k = e.key.toLowerCase();
@@ -133,7 +137,7 @@ export default function Canvas2D({ errorIds }: { errorIds: Set<string> }) {
       style={{ "--ratio": (room.w + 100) / (room.d + 100) } as React.CSSProperties}
       role="group" aria-label={`Planta do ambiente, ${meters(room.w)} por ${meters(room.d)}`} aria-describedby="planner-keys"
     >
-      <p id="planner-keys" className="sr-only">Com um móvel selecionado: setas movem 10 centímetros, R gira 90 graus, Delete remove, Esc desmarca.</p>
+      <p id="planner-keys" className="sr-only">Com um móvel selecionado: setas movem 10 centímetros, R gira 90 graus, Delete remove, Esc desmarca. Control Z desfaz e Control Shift Z refaz.</p>
       {view && size.w > 0 && (
         <Stage
           width={size.w} height={size.h} x={view.x} y={view.y} scaleX={view.scale} scaleY={view.scale}
@@ -201,6 +205,8 @@ export default function Canvas2D({ errorIds }: { errorIds: Set<string> }) {
           <span className="planner-sel small muted">Toque em um móvel para selecioná-lo.</span>
         )}
         <span className="planner-zoom">
+          <button type="button" className="tool" disabled={!canUndo} onClick={undo} aria-label="Desfazer (Ctrl+Z)">↶</button>
+          <button type="button" className="tool" disabled={!canRedo} onClick={redo} aria-label="Refazer (Ctrl+Shift+Z)">↷</button>
           <button type="button" className="tool" onClick={() => zoomAt({ x: size.w / 2, y: size.h / 2 }, (view?.scale ?? 1) / 1.3)} aria-label="Diminuir zoom">−</button>
           <button type="button" className="tool" onClick={() => zoomAt({ x: size.w / 2, y: size.h / 2 }, (view?.scale ?? 1) * 1.3)} aria-label="Aumentar zoom">+</button>
           <button type="button" className="tool" onClick={() => fit && setView(fit)} aria-label="Ajustar a planta à tela">⤢</button>

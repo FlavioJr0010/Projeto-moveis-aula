@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ambientesList, bundles, bySlug, categories, contextosList, products } from "@/data/products";
 import { searchProducts } from "@/lib/search";
+import { priceInfo } from "@/lib/pricing";
+import { recommend } from "@/lib/recommend";
 import { Gallery } from "@/components/Gallery";
 import { ProductBuy } from "@/components/ProductBuy";
 import { ProductCard } from "@/components/ProductCard";
@@ -28,6 +30,7 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
   if (!p) notFound();
   const cat = categories.find((c) => c.slug === p.category)!;
   const similar = searchProducts({}).filter((x) => x.slug !== p.slug && (x.category === p.category || x.ambientes.some((a) => p.ambientes.includes(a)))).slice(0, 4);
+  const combina = recommend({ anchors: [p], limit: 4 });
   const inBundles = bundles.filter((b) => b.items.some((i) => i.slug === p.slug));
 
   const jsonLd = {
@@ -94,6 +97,21 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
           <div className="grid cols-3 stack">
             {inBundles.map((b) => (
               <Link key={b.slug} href={`/ambientes/${b.slug}`} className="card idea"><h3>{b.name}</h3><p className="muted small">{b.description}</p><span className="badge">-{b.discountPct}% no conjunto</span></Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {combina.length > 0 && (
+        <section className="section tight" aria-labelledby="combina">
+          <h2 id="combina">Combina com este móvel</h2>
+          <p className="muted small">Sugestões por estilo, cor e material. Você pode escolher qualquer outro item do catálogo.</p>
+          <div className="grid cols-4">
+            {combina.map((r) => (
+              <div key={r.product.slug} style={{ display: "grid", gap: 6, alignContent: "start" }}>
+                <ProductCard p={{ ...r.product, info: priceInfo(r.product) }} />
+                <p className="small muted" style={{ margin: 0 }}>{r.reasons.join(" · ")}</p>
+              </div>
             ))}
           </div>
         </section>

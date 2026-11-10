@@ -237,11 +237,11 @@ body:has(.stickybar) .chat-fab { bottom: 88px; } body:has(.stickybar) .footer { 
 .planner-sel { flex: 1 1 100%; padding: 0 4px; }
 .planner-zoom { margin-left: auto; display: inline-flex; gap: 6px; }
 .tool { min-width: 44px; min-height: 44px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font-size: 1.2rem; cursor: pointer; }
-.tool:active { transform: scale(.96); } .tool.danger { color: var(--danger); border-color: var(--danger); }
+.tool:active { transform: scale(.96); } .tool[disabled] { opacity: .4; cursor: not-allowed; } .tool.danger { color: var(--danger); border-color: var(--danger); }
 .planner-notice { margin-bottom: 10px; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
 .planner-side { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-.planner-tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); }
-.planner-tabs button { min-height: 48px; border: 0; background: transparent; color: var(--muted); font: 600 .92rem var(--font-body); cursor: pointer; border-bottom: 3px solid transparent; }
+.planner-tabs { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--line); }
+.planner-tabs button { min-height: 48px; padding: 0 4px; border: 0; background: transparent; color: var(--muted); font: 600 .82rem var(--font-body); cursor: pointer; border-bottom: 3px solid transparent; }
 .planner-tabs button.on { color: var(--brand); border-bottom-color: var(--brand); }
 .planner-body { padding: 12px; max-height: 46dvh; overflow: auto; }
 .planner-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }

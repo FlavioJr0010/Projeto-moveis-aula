@@ -50,6 +50,13 @@ describe("geometria", () => {
     expect(findFreeSpot({ w: 100, d: 100 }, room, [{ x: 200, y: 150, w: 400, d: 300 }])).toBeNull();
     expect(findFreeSpot({ w: 500, d: 500 }, room, [])).toBeNull();
   });
+  it("findFreeSpot prefere encostar na parede e deixa o centro livre", () => {
+    const spot = findFreeSpot({ w: 100, d: 60 }, room, [])!;
+    const r = rectOf(spot, { w: 100, d: 60 });
+    const gap = Math.min(r.x - r.w / 2, room.w - (r.x + r.w / 2), r.y - r.d / 2, room.d - (r.y + r.d / 2));
+    expect(gap).toBe(0); // encostado em alguma parede
+    expect(overlaps(r, { x: 200, y: 150, w: 60, d: 60 })).toBe(false); // e não bloqueia o centro
+  });
   it("valida medidas do ambiente", () => {
     expect(validRoomSize(300, 400)).toBeNull();
     expect(validRoomSize(50, 400)).toMatch(/pelo menos/);
@@ -155,5 +162,69 @@ describe("sanitizePlan", () => {
   it("remove itens com slug desconhecido ou rotação inválida", () => {
     const dirty = { ...valid, items: [...valid.items, mk("b", "nao-existe", 1, 1), { ...mk("c", "poltrona-sol", 1, 1), rot: 45 }] };
     expect(sanitizePlan(dirty)?.items.map((i) => i.id)).toEqual(["a"]);
+  });
+});
+
+import { emptyHistory, LIMIT, record, redo, undo } from "./history";
+
+describe("histórico (desfazer/refazer)", () => {
+  const A = plan([]), B = plan([mk("a", "poltrona-sol", 100, 100)]), C = plan([mk("a", "poltrona-sol", 100, 100), mk("b", "criado-mudo-ipe", 200, 200)]);
+  it("desfaz e refaz na ordem certa", () => {
+    let h = record(record(emptyHistory(), A), B); // A -> B -> C (atual = C)
+    const u1 = undo(h, C)!; expect(u1.plan).toBe(B);
+    const u2 = undo(u1.history, u1.plan)!; expect(u2.plan).toBe(A);
+    expect(undo(u2.history, u2.plan)).toBeNull();
+    const r1 = redo(u2.history, u2.plan)!; expect(r1.plan).toBe(B);
+    const r2 = redo(r1.history, r1.plan)!; expect(r2.plan).toBe(C);
+    expect(redo(r2.history, r2.plan)).toBeNull();
+  });
+  it("uma nova mudança apaga o 'refazer'", () => {
+    const u = undo(record(emptyHistory(), A), B)!;
+    expect(u.history.future).toHaveLength(1);
+    expect(record(u.history, A).future).toEqual([]);
+  });
+  it("limita o tamanho", () => {
+    let h = emptyHistory();
+    for (let i = 0; i < LIMIT + 20; i++) h = record(h, A);
+    expect(h.past).toHaveLength(LIMIT);
+  });
+});
+
+describe("store: histórico integrado", () => {
+  it("add → undo → redo; operação recusada não entra no histórico", async () => {
+    const { usePlanner } = await import("./store");
+    const s = () => usePlanner.getState();
+    s().newPlan({ tipo: "sala", w: 220, d: 200 });
+    expect(s().history.past).toHaveLength(0);
+    expect(s().add("poltrona-sol")).toBe(true);
+    expect(s().plan!.items).toHaveLength(1);
+    expect(s().history.past).toHaveLength(1);
+    expect(s().add("criado-mudo-ipe")).toBe(true);
+    expect(s().plan!.items).toHaveLength(2);
+    const before = s().history.past.length;
+    expect(s().add("mesa-reuniao-8-lugares")).toBe(false); // 240x110 não cabe em 220x200
+    expect(s().history.past).toHaveLength(before);
+    s().undo(); expect(s().plan!.items).toHaveLength(1);
+    s().undo(); expect(s().plan!.items).toHaveLength(0);
+    s().undo(); expect(s().plan!.items).toHaveLength(0); // sem passado: não quebra
+    s().redo(); s().redo(); expect(s().plan!.items).toHaveLength(2);
+    s().remove(s().plan!.items[0].id); expect(s().plan!.items).toHaveLength(1);
+    s().undo(); expect(s().plan!.items).toHaveLength(2);
+    s().close(); expect(s().history.past).toHaveLength(0);
+  });
+});
+
+import { newId, UUID_RE } from "./ids";
+
+describe("ids", () => {
+  it("gera UUID v4 válido e único", () => {
+    const a = newId(), b = newId();
+    expect(a).toMatch(UUID_RE); expect(a).not.toBe(b);
+    expect(a[14]).toBe("4");
+  });
+  it("funciona sem crypto.randomUUID (páginas http fora do localhost)", async () => {
+    const orig = Object.getOwnPropertyDescriptor(globalThis, "crypto")!;
+    Object.defineProperty(globalThis, "crypto", { value: { getRandomValues: (a: Uint8Array) => { for (let i = 0; i < a.length; i++) a[i] = (i * 37 + 11) & 255; return a; } }, configurable: true });
+    try { expect(newId()).toMatch(UUID_RE); } finally { Object.defineProperty(globalThis, "crypto", orig); }
   });
 });

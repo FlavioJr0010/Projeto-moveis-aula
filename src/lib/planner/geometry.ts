@@ -48,20 +48,23 @@ export function snapToWalls(r: Rect, room: Room, threshold = 12): { x: number; y
 export const collides = (r: Rect, others: Rect[]) => others.some((o) => overlaps(r, o));
 
 /**
- * Procura a posição livre mais próxima do centro do ambiente (tenta 0° e depois 90°).
- * Retorna null se não houver espaço, é daí que sai o aviso "não cabe".
+ * Procura uma posição livre para um móvel novo (tenta 0° e depois 90°).
+ * Preferência: ENCOSTADO EM UMA PAREDE (como se mobilia de verdade, o que deixa o centro livre para circulação);
+ * entre as posições encostadas, a mais próxima do centro da parede. Retorna null se não houver espaço
+ * (é daí que sai o aviso "não cabe").
  */
 export function findFreeSpot(dims: Dims, room: Room, others: Rect[], step = 10): { x: number; y: number; rot: Rot } | null {
-  let best: { x: number; y: number; rot: Rot; dist: number } | null = null;
+  let best: { x: number; y: number; rot: Rot; cost: number } | null = null;
   const cx = room.w / 2, cy = room.d / 2;
   for (const rot of [0, 90] as Rot[]) {
     const f = footprint(dims, rot);
     if (f.w > room.w || f.d > room.d) continue;
     const xs = axis(f.w / 2, room.w - f.w / 2, step), ys = axis(f.d / 2, room.d - f.d / 2, step);
     for (const y of ys) for (const x of xs) {
-      const dist = (x - cx) ** 2 + (y - cy) ** 2;
-      if (best && dist >= best.dist) continue;
-      if (!collides({ x, y, ...f }, others)) best = { x, y, rot, dist };
+      const wallGap = Math.min(x - f.w / 2, room.w - (x + f.w / 2), y - f.d / 2, room.d - (y + f.d / 2));
+      const cost = wallGap * 10 + Math.hypot(x - cx, y - cy); // parede pesa mais que o centro
+      if (best && cost >= best.cost) continue;
+      if (!collides({ x, y, ...f }, others)) best = { x, y, rot, cost };
     }
   }
   return best && { x: best.x, y: best.y, rot: best.rot };
