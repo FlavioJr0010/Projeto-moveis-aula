@@ -7,17 +7,17 @@ export function Footer() {
       <div className="container">
         <div className="cols">
           <div>
-            <h4>🌿 CasaRaiz</h4>
+            <h2>🌿 CasaRaiz</h2>
             <p>Móveis próprios, feitos para o primeiro lar, para a família e para o apartamento pequeno. Atendimento de gente de verdade.</p>
           </div>
-          <div><h4>Comprar</h4><ul>{categories.map((c) => <li key={c.slug}><Link href={`/produtos?categoria=${c.slug}`}>{c.label}</Link></li>)}</ul></div>
-          <div><h4>Ideias</h4><ul>
+          <div><h2>Comprar</h2><ul>{categories.map((c) => <li key={c.slug}><Link href={`/produtos?categoria=${c.slug}`}>{c.label}</Link></li>)}</ul></div>
+          <div><h2>Ideias</h2><ul>
             <li><Link href="/produtos">Cabe no meu espaço</Link></li>
             <li><Link href="/ambientes">Ambientes completos</Link></li>
             <li><Link href="/quiz">Quiz de estilo</Link></li>
             <li><Link href="/sustentabilidade">Sustentabilidade</Link></li>
           </ul></div>
-          <div><h4>Atendimento</h4><ul>
+          <div><h2>Atendimento</h2><ul>
             <li>WhatsApp e chat (demo)</li><li>Seg a sáb, das 8h às 20h</li><li>Troca e devolução em até 30 dias (demo)</li>
           </ul></div>
         </div>

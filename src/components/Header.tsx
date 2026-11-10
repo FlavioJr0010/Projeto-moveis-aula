@@ -75,14 +75,14 @@ export function Header() {
 
   return (
     <>
-      <div className="topbar">Frete grátis acima de R$ 1.999 (SP, Sul e Sudeste) · 5% off no Pix · até 10x sem juros</div>
+      <div className="topbar" role="region" aria-label="Condições da loja">Frete grátis acima de R$ 1.999 (SP, Sul e Sudeste) · 5% off no Pix · até 10x sem juros</div>
       <header className="header">
         <div className="container">
           <div className="header-row">
             <button ref={menuBtn} type="button" className="menu-btn" aria-label="Abrir menu" aria-expanded={menu} aria-controls="menu-principal" aria-haspopup="dialog" onClick={() => setMenu(true)}>
               <MenuIcon /> <span className="hide-sm">Menu</span>
             </button>
-            <Link href="/" className="logo" aria-label="Casa Raiz, página inicial">🌿 Casa<span>Raiz</span></Link>
+            <Link href="/" className="logo" aria-label="CasaRaiz, página inicial"><span aria-hidden="true">🌿 </span>Casa<span>Raiz</span></Link>
             <form ref={box} className="search" role="search" action="/produtos" onSubmit={() => setOpen(false)}>
               <SearchIcon size={18} />
               <input
@@ -102,9 +102,9 @@ export function Header() {
                 </div>
               )}
             </form>
-            <Link href="/carrinho" className="cart-link" aria-label={`Carrinho, ${count} itens`}>
+            <Link href="/carrinho" className="cart-link" aria-label={count > 0 ? `Carrinho ${count} ${count === 1 ? "item" : "itens"}` : "Carrinho"}>
               <CartIcon /> <span className="hide-sm">Carrinho</span>
-              {count > 0 && <span className="count">{count}</span>}
+              {count > 0 && <>{" "}<span className="count">{count}</span></>}
             </Link>
           </div>
         </div>

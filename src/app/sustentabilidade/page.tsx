@@ -15,6 +15,7 @@ export default function Sust() {
     <div className="container section">
       <h1>Móveis que duram e respeitam o planeta</h1>
       <p className="muted" style={{ maxWidth: 640 }}>O móvel mais sustentável é o que você não precisa trocar daqui a dois anos. Por isso projetamos para durar e mostramos, em cada produto, de que ele é feito.</p>
+      <h2 className="sr-only">Nossos compromissos</h2>
       <div className="grid cols-2 stack" style={{ margin: "32px 0" }}>
         {items.map((x) => <div key={x.t} className="card idea"><div className="ico">{x.i}</div><h3>{x.t}</h3><p className="muted" style={{ margin: 0 }}>{x.d}</p></div>)}
       </div>

@@ -103,6 +103,7 @@ export default async function Produtos({ searchParams }: { searchParams: Promise
         </FiltersPanel>
 
         <section aria-live="polite">
+          <h2 className="sr-only">Lista de produtos</h2>
           <div className="toolbar"><strong>{list.length} {list.length === 1 ? "produto" : "produtos"}</strong></div>
           {chips.length > 0 && (
             <div className="chips">

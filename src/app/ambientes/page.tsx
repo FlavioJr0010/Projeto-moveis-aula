@@ -12,6 +12,7 @@ export default function Ambientes() {
     <div className="container section tight">
       <h1>Ambientes completos</h1>
       <p className="muted">Peças que combinam entre si, com desconto no conjunto e uma única compra.</p>
+      <h2 className="sr-only">Lista de ambientes</h2>
       <div className="grid cols-3 stack">
         {bundles.map((b) => {
           const total = b.items.reduce((s, i) => s + bySlug(i.slug)!.price * i.qty, 0);

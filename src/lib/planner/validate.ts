@@ -1,11 +1,12 @@
 import { bySlug, type Product } from "@/data/products";
-import { fitsRoom, inside, overlaps, rectOf } from "./geometry";
+import { isExpectedInFront } from "./clearance";
+import { clearanceRect, fitsRoom, inside, overlaps, rectOf } from "./geometry";
 import type { Plan } from "./types";
 
-export type AlertCode = "nao-cabe" | "fora" | "colisao" | "altura" | "estoque";
+export type AlertCode = "nao-cabe" | "fora" | "colisao" | "altura" | "estoque" | "folga";
 export interface PlanAlert { level: "erro" | "aviso"; code: AlertCode; itemIds: string[]; message: string }
 
-type Lookup = (slug: string) => Pick<Product, "name" | "dims" | "stock"> | undefined;
+type Lookup = (slug: string) => Pick<Product, "name" | "dims" | "stock" | "category" | "planner"> | undefined;
 
 /** Regras do planejador: não cabe, fora das paredes, sobreposição, altura e estoque. */
 export function validatePlan(plan: Plan, lookup: Lookup = bySlug): PlanAlert[] {
@@ -27,6 +28,19 @@ export function validatePlan(plan: Plan, lookup: Lookup = bySlug): PlanAlert[] {
       alerts.push({ level: "erro", code: "colisao", itemIds: [known[i].it.id, known[j].it.id], message: `${known[i].p.name} está sobre ${known[j].p.name}.` });
     }
   }
+  // folga de uso (aviso, não erro): a frente do móvel precisa estar livre
+  for (const { it, p, rect } of known) {
+    const frente = p.planner?.clearance?.frente;
+    if (!frente || !inside(rect, plan.room)) continue; // se já está fora, o erro "fora" já explica
+    const zone = clearanceRect(it, p.dims, frente);
+    if (!inside(zone, plan.room)) {
+      alerts.push({ level: "aviso", code: "folga", itemIds: [it.id], message: `A frente de ${p.name} está voltada para a parede: deixe ${frente} cm livres para usar. Gire o móvel ou afaste-o.` });
+      continue;
+    }
+    const blocker = known.find((o) => o.it.id !== it.id && !isExpectedInFront(p.category, o.p.category) && overlaps(zone, o.rect));
+    if (blocker) alerts.push({ level: "aviso", code: "folga", itemIds: [it.id, blocker.it.id], message: `Pouco espaço na frente de ${p.name}: ${blocker.p.name} ocupa os ${frente} cm de uso.` });
+  }
+
   const qty = new Map<string, number>();
   for (const { it } of known) qty.set(it.slug, (qty.get(it.slug) ?? 0) + 1);
   for (const [slug, n] of qty) {

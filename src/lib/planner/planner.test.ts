@@ -260,3 +260,57 @@ describe("modelo 3D", () => {
     expect(shade("#000000")).toBe("#000000");
   });
 });
+
+import { clearanceRect, frontVec } from "./geometry";
+
+describe("folga de uso (frente do móvel)", () => {
+  it("a frente aponta para baixo em 0° e gira no sentido horário", () => {
+    expect(frontVec(0)).toEqual([0, 1]); expect(frontVec(90)).toEqual([-1, 0]);
+    expect(frontVec(180)).toEqual([0, -1]); expect(frontVec(270)).toEqual([1, 0]);
+  });
+  it("retângulo da folga: encostado na frente do móvel, com a largura dele", () => {
+    const d = { w: 120, d: 60 };
+    expect(clearanceRect({ x: 200, y: 100, rot: 0 }, d, 75)).toEqual({ x: 200, y: 167.5, w: 120, d: 75 });
+    expect(clearanceRect({ x: 200, y: 100, rot: 180 }, d, 75)).toEqual({ x: 200, y: 32.5, w: 120, d: 75 });
+    expect(clearanceRect({ x: 200, y: 100, rot: 90 }, d, 75)).toEqual({ x: 132.5, y: 100, w: 75, d: 120 }); // móvel 60x120 virado para a esquerda
+    expect(clearanceRect({ x: 200, y: 100, rot: 270 }, d, 75)).toEqual({ x: 267.5, y: 100, w: 75, d: 120 });
+  });
+  const folga = (items: PlacedItem[], r: Room = room) => validatePlan(plan(items, r)).filter((a) => a.code === "folga");
+  const desk = "escrivaninha-clara-120"; // 120x60, folga frente 75
+  it("avisa quando a frente está voltada para a parede", () => {
+    expect(folga([mk("a", desk, 200, 270, 0)])).toHaveLength(1); // encostada na parede de baixo, olhando para ela
+    expect(folga([mk("a", desk, 200, 270, 180)])).toHaveLength(0); // virada para dentro
+    expect(folga([mk("a", desk, 200, 270, 0)])[0].message).toMatch(/parede/);
+  });
+  it("não avisa quando o que está na frente é esperado (cadeira na frente da mesa)", () => {
+    expect(folga([mk("a", desk, 200, 60, 0), mk("b", "cadeira-ergonomica-ergo", 200, 140, 180)])).toEqual([]);
+  });
+  it("avisa quando outro móvel bloqueia a frente", () => {
+    const a = folga([mk("a", desk, 200, 60, 0), mk("b", "armario-baixo-escritorio", 200, 125, 0)]);
+    expect(a).toHaveLength(1);
+    expect(a[0].itemIds).toEqual(["a", "b"]);
+    expect(a[0].message).toMatch(/Pouco espaço/);
+  });
+  it("é só aviso (não deixa o móvel vermelho) e não duplica o erro de 'fora da parede'", () => {
+    const all = validatePlan(plan([mk("a", desk, 200, 270, 0)]));
+    expect(all.every((x) => x.level === "aviso")).toBe(true);
+    const fora = validatePlan(plan([mk("a", desk, 20, 270, 0)]));
+    expect(fora.filter((x) => x.code === "folga")).toEqual([]);
+  });
+  it("ao adicionar, o móvel já nasce com a frente livre e voltada para dentro (todo o catálogo)", () => {
+    const big: Room = { tipo: "sala", w: 800, d: 600 };
+    for (const p of products) {
+      if (!p.planner?.clearance) continue;
+      const r = addItem(plan([], big), p.slug, "x");
+      expect(r.error, p.slug).toBeUndefined();
+      expect(validatePlan(r.plan).filter((a) => a.code === "folga"), p.slug).toEqual([]);
+    }
+  });
+  it("com vários móveis, o novo também escolhe frente livre", () => {
+    let p = plan([], { tipo: "home-office", w: 400, d: 300 });
+    for (const slug of [desk, "cadeira-ergonomica-ergo", "gaveteiro-3-gavetas-rodas", "estante-livros-aroeira"]) {
+      const r = addItem(p, slug, slug); expect(r.error, slug).toBeUndefined(); p = r.plan;
+    }
+    expect(validatePlan(p).filter((a) => a.level === "erro")).toEqual([]);
+  });
+});

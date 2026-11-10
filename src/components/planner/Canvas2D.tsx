@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Group, Layer, Line, Rect, Stage, Text } from "react-konva";
 import type Konva from "konva";
 import { bySlug } from "@/data/products";
-import { clampCenter, collides, footprint, rectOf } from "@/lib/planner/geometry";
+import { clampCenter, clearanceRect, collides, footprint, rectOf } from "@/lib/planner/geometry";
 import { usePlanner } from "@/lib/planner/store";
 
 interface View { scale: number; x: number; y: number }
@@ -154,6 +154,11 @@ export default function Canvas2D({ errorIds }: { errorIds: Set<string> }) {
             <Rect x={0} y={0} width={room.w} height={room.d} stroke={pal.wall} strokeWidth={4} strokeScaleEnabled={false} listening={false} />
             <Text x={0} y={-fs * 1.8} width={room.w} align="center" text={`${room.w} cm (${meters(room.w)})`} fontSize={fs} fill={pal.text} listening={false} />
             <Text x={-fs * 1.8} y={room.d} width={room.d} align="center" rotation={-90} text={`${room.d} cm (${meters(room.d)})`} fontSize={fs} fill={pal.text} listening={false} />
+
+            {sel && sel.p.planner?.clearance?.frente ? (() => {
+              const z = clearanceRect(sel.it, sel.p.dims, sel.p.planner!.clearance!.frente);
+              return <Rect x={z.x - z.w / 2} y={z.y - z.d / 2} width={z.w} height={z.d} fill={pal.accent} opacity={0.14} stroke={pal.accent} strokeWidth={1.5} strokeScaleEnabled={false} dash={[6, 4]} listening={false} />;
+            })() : null}
 
             {items.map(({ it, p }) => {
               const f = footprint(p.dims, it.rot);

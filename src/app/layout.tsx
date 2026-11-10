@@ -19,9 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={`${inter.variable} ${fraunces.variable}`}>
       <body>
+        <a className="skip" href="#conteudo">Pular para o conteúdo</a>
         <CartProvider>
           <Header />
-          <main id="conteudo">{children}</main>
+          <main id="conteudo" tabIndex={-1}>{children}</main>
           <Footer />
           <ChatWidget />
           <VLibras />

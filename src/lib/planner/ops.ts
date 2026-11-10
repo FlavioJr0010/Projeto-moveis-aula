@@ -2,7 +2,7 @@ import { bySlug, type Product } from "@/data/products";
 import { clampCenter, collides, findFreeSpot, fitsRoom, inside, nextRot, rectOf, snap, snapToWalls } from "./geometry";
 import type { PlacedItem, Plan, Rect } from "./types";
 
-type Lookup = (slug: string) => Pick<Product, "name" | "dims"> | undefined;
+type Lookup = (slug: string) => Pick<Product, "name" | "dims"> & Partial<Pick<Product, "planner">> | undefined;
 export interface OpResult { plan: Plan; error?: string }
 
 const touch = (plan: Plan, items: PlacedItem[]): Plan => ({ ...plan, items, updatedAt: new Date().toISOString() });
@@ -22,7 +22,7 @@ export function addItem(plan: Plan, slug: string, id: string, lookup: Lookup = b
   if (!fitsRoom(p.dims, plan.room)) {
     return { plan, error: `${p.name} não cabe neste ambiente (${p.dims.w}×${p.dims.d} cm em ${plan.room.w}×${plan.room.d} cm).` };
   }
-  const spot = findFreeSpot(p.dims, plan.room, othersRects(plan, null, lookup));
+  const spot = findFreeSpot(p.dims, plan.room, othersRects(plan, null, lookup), 10, p.planner?.clearance?.frente ?? 0);
   if (!spot) return { plan, error: `Não há espaço livre para ${p.name}. Mova ou remova algum móvel.` };
   return { plan: touch(plan, [...plan.items, { id, slug, ...spot }]) };
 }

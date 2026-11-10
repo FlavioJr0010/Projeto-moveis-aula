@@ -13,6 +13,22 @@ export function footprint(dims: Dims, rot: Rot): { w: number; d: number } {
   return rot === 90 || rot === 270 ? { w: dims.d, d: dims.w } : { w: dims.w, d: dims.d };
 }
 
+/**
+ * Convenção da FRENTE do móvel: em 0° aponta para baixo na planta (+y). A rotação da planta é horária,
+ * então em 90° aponta para a esquerda, em 180° para cima e em 270° para a direita.
+ */
+export const frontVec = (rot: Rot): [number, number] => (rot === 0 ? [0, 1] : rot === 90 ? [-1, 0] : rot === 180 ? [0, -1] : [1, 0]);
+
+/** Área de uso (folga) à frente do móvel, como retângulo centrado. */
+export function clearanceRect(item: Pick<PlacedItem, "x" | "y" | "rot">, dims: Dims, frente: number): Rect {
+  const f = footprint(dims, item.rot);
+  const [vx, vy] = frontVec(item.rot);
+  const along = vx !== 0 ? f.w : f.d; // tamanho do móvel na direção da frente
+  const perp = vx !== 0 ? f.d : f.w;
+  const x = item.x + vx * (along / 2 + frente / 2), y = item.y + vy * (along / 2 + frente / 2);
+  return vx !== 0 ? { x, y, w: frente, d: perp } : { x, y, w: perp, d: frente };
+}
+
 export const rectOf = (item: Pick<PlacedItem, "x" | "y" | "rot">, dims: Dims): Rect => ({ x: item.x, y: item.y, ...footprint(dims, item.rot) });
 
 export const overlaps = (a: Rect, b: Rect) =>
@@ -48,21 +64,25 @@ export function snapToWalls(r: Rect, room: Room, threshold = 12): { x: number; y
 export const collides = (r: Rect, others: Rect[]) => others.some((o) => overlaps(r, o));
 
 /**
- * Procura uma posição livre para um móvel novo (tenta 0° e depois 90°).
- * Preferência: ENCOSTADO EM UMA PAREDE (como se mobilia de verdade, o que deixa o centro livre para circulação);
- * entre as posições encostadas, a mais próxima do centro da parede. Retorna null se não houver espaço
- * (é daí que sai o aviso "não cabe").
+ * Procura uma posição livre para um móvel novo.
+ * Preferências (nesta ordem): ENCOSTADO EM UMA PAREDE (como se mobilia de verdade, deixando o centro livre),
+ * com a FRENTE voltada para o ambiente e livre (se `frente` for informada), e perto do centro da parede.
+ * Retorna null se não houver espaço (é daí que sai o aviso "não cabe").
  */
-export function findFreeSpot(dims: Dims, room: Room, others: Rect[], step = 10): { x: number; y: number; rot: Rot } | null {
+export function findFreeSpot(dims: Dims, room: Room, others: Rect[], step = 10, frente = 0): { x: number; y: number; rot: Rot } | null {
   let best: { x: number; y: number; rot: Rot; cost: number } | null = null;
   const cx = room.w / 2, cy = room.d / 2;
-  for (const rot of [0, 90] as Rot[]) {
+  for (const rot of [0, 90, 180, 270] as Rot[]) {
     const f = footprint(dims, rot);
     if (f.w > room.w || f.d > room.d) continue;
     const xs = axis(f.w / 2, room.w - f.w / 2, step), ys = axis(f.d / 2, room.d - f.d / 2, step);
     for (const y of ys) for (const x of xs) {
       const wallGap = Math.min(x - f.w / 2, room.w - (x + f.w / 2), y - f.d / 2, room.d - (y + f.d / 2));
-      const cost = wallGap * 10 + Math.hypot(x - cx, y - cy); // parede pesa mais que o centro
+      let cost = wallGap * 10 + Math.hypot(x - cx, y - cy); // parede pesa mais que o centro
+      if (frente > 0) {
+        const z = clearanceRect({ x, y, rot }, dims, frente);
+        if (!inside(z, room) || collides(z, others)) cost += 5000; // frente bloqueada ou na parede: só em último caso
+      }
       if (best && cost >= best.cost) continue;
       if (!collides({ x, y, ...f }, others)) best = { x, y, rot, cost };
     }
