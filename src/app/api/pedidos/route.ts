@@ -4,6 +4,7 @@ import { isValidLine, type CartLine } from "@/lib/pricing";
 import { isCep } from "@/lib/format";
 import { addBusinessDays } from "@/lib/shipping";
 import { randomBytes } from "node:crypto";
+import { supabase } from "@/lib/supabase";
 
 interface Body {
   items?: CartLine[];
@@ -42,20 +43,39 @@ export async function POST(req: Request) {
 
   const id = "CR-" + randomBytes(3).toString("hex").toUpperCase();
   const code = randomBytes(16).toString("hex");
+  const createdAt = new Date().toISOString();
+  const status = pay.method === "cartao" ? "pago" : "aguardando_pagamento";
+  const shipping = { label: calc.option.label, price: calc.option.price, deliveryBy: addBusinessDays(calc.option.daysMax).toISOString() };
+  const orderItems = calc.cart.lines.map((l) => ({ slug: l.slug, name: l.product.name, qty: l.qty, color: l.color, unitPrice: l.unitPrice, assembly: l.assembly }));
+
+  // Grava o pedido no Supabase (demo). Se o banco falhar, o checkout não quebra: `saved` indica o resultado.
+  // Não guardamos dados de cartão nem o código Pix/boleto.
+  let saved = false;
+  if (supabase) {
+    const { error } = await supabase.from("orders").insert({
+      id, created_at: createdAt, status,
+      customer_name: c.nome.trim(), customer_email: c.email.trim(),
+      address: a, shipping, payment_method: pay.method, totals: calc.totals, items: orderItems,
+    });
+    if (error) console.error("[pedidos] falha ao gravar no Supabase:", error.message);
+    saved = !error;
+  }
+
   return NextResponse.json({
     id,
-    createdAt: new Date().toISOString(),
-    status: pay.method === "cartao" ? "pago" : "aguardando_pagamento",
+    createdAt,
+    status,
     simulated: true,
+    saved,
     customer: { nome: c.nome.trim(), email: c.email.trim() },
     address: a,
-    shipping: { label: calc.option.label, price: calc.option.price, deliveryBy: addBusinessDays(calc.option.daysMax).toISOString() },
+    shipping,
     payment: {
       method: pay.method, installments: calc.totals.installments,
       pixCode: pay.method === "pix" ? `00020126SIMULADO${code}5204000053039865802BR` : undefined,
       boletoLine: pay.method === "boleto" ? `00000.00000 00000.000000 00000.000000 0 ${code.slice(0, 14).replace(/\D/g, "0")}` : undefined,
     },
     totals: calc.totals,
-    items: calc.cart.lines.map((l) => ({ slug: l.slug, name: l.product.name, qty: l.qty, color: l.color, unitPrice: l.unitPrice, assembly: l.assembly })),
+    items: orderItems,
   });
 }
