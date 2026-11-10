@@ -15,3 +15,5 @@ export const TruckIcon = I(<><path d="M2 6h11v10H2zM13 9h4l4 3v4h-8" /><circle c
 export const ShieldIcon = I(<><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" /><path d="m9 12 2 2 4-4" /></>);
 export const WrenchIcon = I(<><path d="M14.5 6.5a4 4 0 0 0 4.9 4.9L21 13l-8 8-3.5-3.5 8-8z" /><path d="M10 14 4 20" /></>);
 export const PixIcon = I(<><path d="M12 3 6 9l6 6 6-6zM12 15l-6 6M12 15l6 6" /></>);
+export const MenuIcon = I(<><path d="M4 6h16M4 12h16M4 18h16" /></>);
+export const CloseIcon = I(<><path d="M6 6l12 12M18 6 6 18" /></>);
