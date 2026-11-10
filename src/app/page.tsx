@@ -109,7 +109,7 @@ export default function Home() {
       <section className="section tight">
         <div className="container">
           <div className="band">
-            <div><h2>Móveis bonitos que respeitam o planeta</h2><p>Madeira de reflorestamento, painéis de baixa emissão, embalagens recicláveis e o programa “Segunda vida” para o seu móvel antigo.</p><Link className="btn" href="/sustentabilidade">Conhecer nosso compromisso</Link></div>
+            <div><h2>Móveis bonitos que respeitam o planeta</h2><p>Madeira de reflorestamento, painéis de baixa emissão, embalagens recicláveis e, em estudo, o programa “Segunda vida” para o seu móvel antigo.</p><Link className="btn" href="/sustentabilidade">Conhecer nosso compromisso</Link></div>
             <ul><li><LeafIcon /> Cada produto mostra o seu índice de material reciclado</li><li><TruckIcon /> Entrega consolidada para menos viagens</li><li><ShieldIcon /> Peças que duram: garantia de 3 anos (demo)</li></ul>
           </div>
         </div>

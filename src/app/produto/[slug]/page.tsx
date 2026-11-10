@@ -10,6 +10,8 @@ import { ProductBuy } from "@/components/ProductBuy";
 import { ProductCard } from "@/components/ProductCard";
 import { Stars } from "@/components/Stars";
 import { LeafIcon } from "@/components/Icons";
+import { WhatsAppAsk } from "@/components/WhatsAppAsk";
+import { techOf } from "@/data/tech";
 
 export function generateStaticParams() { return products.map((p) => ({ slug: p.slug })); }
 
@@ -31,11 +33,13 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
   const cat = categories.find((c) => c.slug === p.category)!;
   const similar = searchProducts({}).filter((x) => x.slug !== p.slug && (x.category === p.category || x.ambientes.some((a) => p.ambientes.includes(a)))).slice(0, 4);
   const combina = recommend({ anchors: [p], limit: 4 });
+  const tech = techOf(p.slug);
+  const isSeat = p.category === "cadeiras" || p.subcategoria === "banqueta";
+  const demo = (f?: string) => (f === "demo" ? " (demo)" : "");
   const inBundles = bundles.filter((b) => b.items.some((i) => i.slug === p.slug));
 
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Product", name: p.name, description: p.description,
-    aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, reviewCount: p.reviews },
     offers: { "@type": "Offer", priceCurrency: "BRL", price: p.price, availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" },
   };
 
@@ -50,8 +54,9 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
         <div>
           <h1 style={{ fontSize: "2rem" }}>{p.name}</h1>
           <p className="muted">{p.short}</p>
-          <p><Stars rating={p.rating} count={p.reviews} /></p>
+          <p><Stars rating={p.rating} count={p.reviews} /> <span className="small muted">· nota de demonstração</span></p>
           <ProductBuy product={p} />
+          <WhatsAppAsk name={p.name} />
         </div>
       </div>
 
@@ -64,6 +69,11 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
               <tr><th>Largura</th><td>{p.dims.w} cm</td></tr>
               <tr><th>Profundidade</th><td>{p.dims.d} cm</td></tr>
               <tr><th>Altura</th><td>{p.dims.h} cm</td></tr>
+              {isSeat && <tr><th>Altura do assento</th><td>{tech.assento ? `${tech.assento.range[0] === tech.assento.range[1] ? tech.assento.range[0] : `${tech.assento.range[0]} a ${tech.assento.range[1]}`} cm${demo(tech.assento.fonte)}` : <span className="muted">informação não disponível (os {p.dims.h} cm acima são a altura total)</span>}</td></tr>}
+              {isSeat && tech.uso && <tr><th>Indicado para</th><td>{tech.uso.para.map((u) => (u === "mesa" ? "mesa" : "bancada ou balcão")).join(", ")}{demo(tech.uso.fonte)}</td></tr>}
+              {tech.embalagem && <tr><th>Embalagem</th><td>{tech.embalagem.volumes} volume{tech.embalagem.volumes > 1 ? "s" : ""}; maior: {tech.embalagem.w} × {tech.embalagem.d} × {tech.embalagem.h} cm{demo(tech.embalagem.fonte)}</td></tr>}
+              {tech.desmontavel && <tr><th>Desmontagem</th><td>{tech.desmontavel.valor ? "Chega desmontado / pode ser desmontado" : "Não desmonta"}{demo(tech.desmontavel.fonte)}</td></tr>}
+              {tech.limpeza && <tr><th>Limpeza</th><td>{tech.limpeza.nota}{demo(tech.limpeza.fonte)}</td></tr>}
               <tr><th>Peso</th><td>{p.weightKg} kg</td></tr>
               <tr><th>Materiais</th><td>{p.material}</td></tr>
               <tr><th>Uso</th><td>{p.contextos.map((c) => contextosList.find((x) => x.slug === c)?.label).join(", ")}</td></tr>
@@ -82,10 +92,10 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
               <p className="small muted" style={{ margin: "8px 0 0" }}>Selo: {p.eco.cert}. Dados de demonstração.</p>
             </div>
             <div>
-              <h2>Avaliações</h2>
+              <h2>Avaliações <span className="badge">demonstração</span></h2>
               <p><Stars rating={p.rating} count={p.reviews} /></p>
               {REVIEWS.map((r) => (<div key={r.n} className="review"><Stars rating={r.s} /> <b style={{ marginLeft: 6 }}>{r.n}</b><p style={{ margin: "4px 0 0" }}>{r.t}</p></div>))}
-              <p className="small muted">Avaliações de demonstração.</p>
+              <p className="small muted">Avaliações e notas de demonstração: não são relatos de clientes reais.</p>
             </div>
           </div>
         </div>

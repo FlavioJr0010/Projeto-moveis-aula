@@ -8,6 +8,7 @@ import { FREE_SHIPPING_FROM, lineKey, priceCart } from "@/lib/pricing";
 import { estimateShipping } from "@/lib/shipping";
 import { useCart } from "./CartProvider";
 import { CartHarmony } from "./CartHarmony";
+import { CompatAlerts } from "./CompatAlerts";
 
 export function CartClient() {
   const { lines, ready, setQty, remove, toggleAssembly, cep, setCep } = useCart();
@@ -37,6 +38,7 @@ export function CartClient() {
           <div className="progress" role="progressbar" aria-label="Progresso para frete grátis" aria-valuemin={0} aria-valuemax={FREE_SHIPPING_FROM} aria-valuenow={Math.min(cart.merchandise, FREE_SHIPPING_FROM)}><i style={{ width: `${Math.min(100, (cart.merchandise / FREE_SHIPPING_FROM) * 100)}%` }} /></div>
         </div>
         <CartHarmony lines={cart.lines} part="summary" />
+        <CompatAlerts items={cart.lines.map((l) => ({ slug: l.slug, bundle: l.bundle }))} />
         <div className="card">
           {cart.lines.map((l) => {
             const key = lineKey(l);

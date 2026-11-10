@@ -7,7 +7,7 @@ const items = [
   { i: <LeafIcon />, t: "Madeira de origem conhecida", d: "Estruturas em madeira de reflorestamento e manejo, com rastreio de origem." },
   { i: <ShieldIcon />, t: "Painéis de baixa emissão", d: "MDF E1, que emite menos formaldeído e é melhor para o ar da sua casa." },
   { i: <TruckIcon />, t: "Entrega consolidada", d: "Agrupamos pedidos por região para rodar menos e emitir menos." },
-  { i: <HomeIcon />, t: "Segunda vida", d: "Na entrega, recolhemos o seu móvel antigo para doação ou reciclagem." },
+  { i: <HomeIcon />, t: "Segunda vida (em estudo)", d: "Estudamos recolher o móvel antigo para doação ou reciclagem. Ainda não é um serviço disponível e não há data prevista." },
 ];
 
 export default function Sust() {

@@ -1,13 +1,14 @@
 "use client";
 import { useRef, useState } from "react";
 import { ChatIcon } from "./Icons";
+import { whatsappLink } from "@/lib/whatsapp";
 
 const FAQ: Record<string, string> = {
   "Prazo de entrega": "O prazo depende do CEP: de 3 a 18 dias úteis. Informe o CEP na página do produto ou no carrinho para ver o prazo exato.",
   "Montagem": "Oferecemos montagem opcional por R$ 60 a R$ 190, conforme o móvel. Marque a opção na página do produto ou no carrinho.",
   "Troca e devolução": "Você tem 30 dias para trocar ou devolver. Móveis com defeito são recolhidos sem custo (política de demonstração).",
-  "Meu móvel passa na porta?": "Veja a aba “Cabe no meu espaço” na página do produto: ela compara as medidas com a sua porta, e podemos enviar desmontado.",
-  "Segunda vida": "Na entrega, recolhemos o móvel antigo para doação ou reciclagem, sem custo extra (programa de demonstração).",
+  "Meu móvel passa na porta?": "Na aba “Cabe no meu espaço” da página do produto há uma verificação opcional de acesso para entrega. Ela é só uma triagem pelas medidas que você informar, não uma garantia. Quando a ficha indica que o móvel chega desmontado, isso aparece na página; na dúvida, fale com a gente.",
+  "Segunda vida": "A “Segunda vida” (recolher o móvel antigo para doação ou reciclagem) ainda está em estudo: não é um serviço disponível hoje e não há prazo ou crédito prometido.",
 };
 
 export function ChatWidget() {
@@ -33,7 +34,7 @@ export function ChatWidget() {
           </div>
           <div className="quick">
             {Object.keys(FAQ).map((k) => <button key={k} onClick={() => ask(k)}>{k}</button>)}
-            <a className="btn sm" href="https://wa.me/5511900000000" target="_blank" rel="noreferrer">Falar no WhatsApp (demo)</a>
+            <a className="btn sm" href={whatsappLink()} target="_blank" rel="noreferrer">Falar no WhatsApp (demo)</a>
           </div>
         </section>
       )}

@@ -6,6 +6,7 @@ import { bundleBySlug, bundles, bySlug, img } from "@/data/products";
 import { priceInfo } from "@/lib/pricing";
 import { brl } from "@/lib/format";
 import { BundleBuy } from "@/components/BundleBuy";
+import { CompatAlerts } from "@/components/CompatAlerts";
 
 export function generateStaticParams() { return bundles.map((b) => ({ slug: b.slug })); }
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -41,6 +42,7 @@ export default async function BundlePage({ params }: { params: Promise<{ slug: s
       </div>
       <section className="section tight">
         <h2>O que vem no ambiente</h2>
+        <CompatAlerts items={b.items.map((i) => ({ slug: i.slug, bundle: b.slug }))} />
         <div className="card">
           {rows.map((r) => (
             <Link key={r.slug} href={`/produto/${r.slug}`} className="line">
