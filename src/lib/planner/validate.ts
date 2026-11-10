@@ -1,9 +1,10 @@
 import { bySlug, type Product } from "@/data/products";
 import { isExpectedInFront } from "./clearance";
 import { clearanceRect, fitsRoom, inside, overlaps, rectOf } from "./geometry";
+import { swingRect, WINDOW_SILL, windowStrip } from "./openings";
 import type { Plan } from "./types";
 
-export type AlertCode = "nao-cabe" | "fora" | "colisao" | "altura" | "estoque" | "folga";
+export type AlertCode = "nao-cabe" | "fora" | "colisao" | "altura" | "estoque" | "folga" | "porta" | "janela";
 export interface PlanAlert { level: "erro" | "aviso"; code: AlertCode; itemIds: string[]; message: string }
 
 type Lookup = (slug: string) => Pick<Product, "name" | "dims" | "stock" | "category" | "planner"> | undefined;
@@ -39,6 +40,19 @@ export function validatePlan(plan: Plan, lookup: Lookup = bySlug): PlanAlert[] {
     }
     const blocker = known.find((o) => o.it.id !== it.id && !isExpectedInFront(p.category, o.p.category) && overlaps(zone, o.rect));
     if (blocker) alerts.push({ level: "aviso", code: "folga", itemIds: [it.id, blocker.it.id], message: `Pouco espaço na frente de ${p.name}: ${blocker.p.name} ocupa os ${frente} cm de uso.` });
+  }
+
+  // portas precisam abrir; móvel alto encostado na janela a encobre
+  for (const o of plan.openings ?? []) {
+    if (o.kind === "porta") {
+      const zone = swingRect(o, plan.room);
+      const hit = known.filter((k) => overlaps(zone, k.rect));
+      if (hit.length) alerts.push({ level: "aviso", code: "porta", itemIds: hit.map((k) => k.it.id), message: `${hit[0].p.name} está no caminho da abertura da porta${hit.length > 1 ? ` (e mais ${hit.length - 1})` : ""}. Deixe ${o.w} cm livres à frente dela.` });
+    } else {
+      const zone = windowStrip(o, plan.room);
+      const hit = known.filter((k) => k.p.dims.h > WINDOW_SILL - 10 && overlaps(zone, k.rect));
+      if (hit.length) alerts.push({ level: "aviso", code: "janela", itemIds: hit.map((k) => k.it.id), message: `${hit[0].p.name} (${hit[0].p.dims.h} cm de altura) encobre a janela e atrapalha a luz e a ventilação.` });
+    }
   }
 
   const qty = new Map<string, number>();
