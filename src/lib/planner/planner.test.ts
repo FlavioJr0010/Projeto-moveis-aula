@@ -314,3 +314,25 @@ describe("folga de uso (frente do móvel)", () => {
     expect(validatePlan(p).filter((a) => a.level === "erro")).toEqual([]);
   });
 });
+
+import { decorFor } from "./decor";
+
+describe("decoração automática", () => {
+  const base = { room: { tipo: "sala" as const, w: 400, d: 350 }, openings: [] };
+  it("sem móveis só há plantas, nada de tapete", () => {
+    const d = decorFor({ ...base, items: [] });
+    expect(d.rug).toBeNull();
+    expect(d.plants.length).toBeGreaterThan(0);
+  });
+  it("tapete fica dentro das paredes e plantas não encostam em móveis", () => {
+    const sofa = products.find((p) => p.category === "sofas")!;
+    const d = decorFor({ ...base, items: [{ id: "a", slug: sofa.slug, x: 200, y: 300, rot: 0 }] });
+    expect(d.rug).not.toBeNull();
+    const r = d.rug!;
+    expect(r.x - r.w / 2).toBeGreaterThanOrEqual(0); expect(r.x + r.w / 2).toBeLessThanOrEqual(400);
+    expect(r.y - r.d / 2).toBeGreaterThanOrEqual(0); expect(r.y + r.d / 2).toBeLessThanOrEqual(350);
+  });
+  it("ambiente pequeno não ganha planta", () => {
+    expect(decorFor({ room: { tipo: "sala", w: 180, d: 180 }, items: [], openings: [] }).plants).toEqual([]);
+  });
+});

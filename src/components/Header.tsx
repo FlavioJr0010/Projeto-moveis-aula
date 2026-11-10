@@ -75,7 +75,7 @@ export function Header() {
 
   return (
     <>
-      <div className="topbar" role="region" aria-label="Condições da loja">Frete grátis acima de R$ 1.999 (SP, Sul e Sudeste) · 5% off no Pix · até 10x sem juros</div>
+      <div className="topbar" role="region" aria-label="Condições da loja">Frete grátis acima de R$ 1.999 (Irecê e região) · 5% off no Pix · até 10x sem juros</div>
       <header className="header">
         <div className="container">
           <div className="header-row">

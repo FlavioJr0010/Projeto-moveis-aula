@@ -32,7 +32,7 @@ export default function Home() {
 
       <div className="container trust" aria-label="Vantagens">
         <div><PixIcon /><span><b>5% off no Pix</b>e até 10x sem juros</span></div>
-        <div><TruckIcon /><span><b>Frete grátis</b>acima de R$ 1.999 (SP, Sul e Sudeste)</span></div>
+        <div><TruckIcon /><span><b>Frete grátis</b>acima de R$ 1.999 (Irecê e região)</span></div>
         <div><WrenchIcon /><span><b>Montagem opcional</b>escolha no carrinho</span></div>
         <div><ShieldIcon /><span><b>30 dias para trocar</b>sem burocracia (demo)</span></div>
       </div>

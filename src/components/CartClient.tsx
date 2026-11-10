@@ -33,8 +33,8 @@ export function CartClient() {
       <div>
         <div className="card" style={{ marginBottom: 16, padding: 16 }}>
           {missing > 0
-            ? <p style={{ margin: "0 0 8px" }}>Faltam <b>{brl(missing)}</b> para frete grátis (SP, Sul e Sudeste).</p>
-            : <p style={{ margin: "0 0 8px" }} className="save">🎉 Você ganhou frete grátis (SP, Sul e Sudeste)!</p>}
+            ? <p style={{ margin: "0 0 8px" }}>Faltam <b>{brl(missing)}</b> para frete grátis (Irecê e região).</p>
+            : <p style={{ margin: "0 0 8px" }} className="save">🎉 Você ganhou frete grátis (Irecê e região)!</p>}
           <div className="progress" role="progressbar" aria-label="Progresso para frete grátis" aria-valuemin={0} aria-valuemax={FREE_SHIPPING_FROM} aria-valuenow={Math.min(cart.merchandise, FREE_SHIPPING_FROM)}><i style={{ width: `${Math.min(100, (cart.merchandise / FREE_SHIPPING_FROM) * 100)}%` }} /></div>
         </div>
         <CartHarmony lines={cart.lines} part="summary" />

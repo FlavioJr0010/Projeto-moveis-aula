@@ -31,7 +31,7 @@ export function ProductCard({ p, fits, priority }: { p: ProductWithPrice; fits?:
           <div className="small muted">
             ou {info.installments}x de {brl(info.installmentValue)} sem juros
           </div>
-          {info.price >= FREE_SHIPPING_FROM && <div className="small" style={{ color: "var(--ok)", fontWeight: 600 }}>Frete grátis (SP, Sul e Sudeste)</div>}
+          {info.price >= FREE_SHIPPING_FROM && <div className="small" style={{ color: "var(--ok)", fontWeight: 600 }}>Frete grátis (Irecê e região)</div>}
         </div>
       </div>
     </Link>

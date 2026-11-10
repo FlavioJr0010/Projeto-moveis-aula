@@ -5,6 +5,7 @@ import { usePlanner } from "@/lib/planner/store";
 import { itemsWithError, validatePlan } from "@/lib/planner/validate";
 import { AlertsPanel } from "./AlertsPanel";
 import { CatalogPanel } from "./CatalogPanel";
+import { OpeningsPanel } from "./OpeningsPanel";
 import { ProjectPanel } from "./ProjectPanel";
 import { SuggestionsPanel } from "./SuggestionsPanel";
 import { View3D } from "./View3D";
@@ -15,7 +16,7 @@ const Canvas2D = dynamic(() => import("./Canvas2D"), {
   loading: () => <div className="planner-stage" role="status"><p className="muted" style={{ padding: 16 }}>Carregando planta…</p></div>,
 });
 
-type Tab = "moveis" | "sugestoes" | "projeto" | "alertas";
+type Tab = "moveis" | "ambiente" | "sugestoes" | "projeto" | "alertas";
 
 export function Workspace() {
   const plan = usePlanner((s) => s.plan)!;
@@ -35,6 +36,7 @@ export function Workspace() {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "moveis", label: "Móveis" },
+    { id: "ambiente", label: "Ambiente" },
     { id: "sugestoes", label: "Sugestões" },
     { id: "projeto", label: `Projeto (${plan.items.length})` },
     { id: "alertas", label: alerts.length ? `Alertas (${alerts.length})` : "Alertas" },
@@ -63,6 +65,7 @@ export function Workspace() {
         </div>
         <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="planner-body">
           {tab === "moveis" && <CatalogPanel />}
+          {tab === "ambiente" && <OpeningsPanel />}
           {tab === "sugestoes" && <SuggestionsPanel goCatalog={() => setTab("moveis")} />}
           {tab === "projeto" && <ProjectPanel alerts={alerts} />}
           {tab === "alertas" && <AlertsPanel alerts={alerts} />}

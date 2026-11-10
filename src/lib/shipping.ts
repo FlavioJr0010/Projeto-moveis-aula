@@ -23,12 +23,16 @@ const REGIONS: Record<string, { name: string; base: number; perKg: number; days:
   "9": { name: "Rio Grande do Sul", base: 119, perKg: 1.7, days: [7, 12] },
 };
 
+const irece0 = (d: string) =>
+  d.startsWith("449") ? { name: "Irecê e região", base: 29, perKg: 0.6, days: [1, 3] as [number, number] } : null;
+
 /** Simulação: calcula pela 1ª faixa do CEP. Troque por uma transportadora real depois. */
 export function estimateShipping(cep: string, merchandise: number, weightKg: number) {
   const digits = cep.replace(/\D/g, "");
   if (digits.length !== 8) return null;
-  const r = REGIONS[digits[0]];
-  const free = merchandise >= FREE_SHIPPING_FROM && ["0", "1", "2", "3", "8", "9"].includes(digits[0]);
+  const r = irece0(digits) ?? REGIONS[digits[0]];
+  const irece = digits.startsWith("449"); // Irecê (44900-000) e região
+  const free = merchandise >= FREE_SHIPPING_FROM && irece;
   const standard = free ? 0 : round2(r.base + r.perKg * weightKg);
   const options: ShippingOption[] = [
     {
@@ -41,8 +45,8 @@ export function estimateShipping(cep: string, merchandise: number, weightKg: num
       daysMin: r.days[0] + 1, daysMax: r.days[1] + 2, note: "Janela de 4 horas, com aviso por WhatsApp",
     },
   ];
-  if (digits[0] === "0" || digits[0] === "1") {
-    options.push({ id: "retirada", label: "Retirar no ponto parceiro", price: 0, daysMin: 2, daysMax: 4, note: "Grátis, em São Paulo (demo)" });
+  if (irece) {
+    options.push({ id: "retirada", label: "Retirar na loja em Irecê", price: 0, daysMin: 1, daysMax: 2, note: "Grátis, em Irecê - BA" });
   }
   return { region: r.name, options };
 }
