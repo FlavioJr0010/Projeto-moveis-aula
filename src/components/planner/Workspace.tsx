@@ -7,6 +7,7 @@ import { AlertsPanel } from "./AlertsPanel";
 import { CatalogPanel } from "./CatalogPanel";
 import { ProjectPanel } from "./ProjectPanel";
 import { SuggestionsPanel } from "./SuggestionsPanel";
+import { View3D } from "./View3D";
 
 // Konva usa `window`: carrega só no navegador e não pesa nas outras páginas.
 const Canvas2D = dynamic(() => import("./Canvas2D"), {
@@ -21,6 +22,7 @@ export function Workspace() {
   const notice = usePlanner((s) => s.notice);
   const clearNotice = usePlanner((s) => s.clearNotice);
   const [tab, setTab] = useState<Tab>("moveis");
+  const [view, setView] = useState<"2d" | "3d">("2d");
 
   const alerts = useMemo(() => validatePlan(plan), [plan]);
   const errorIds = useMemo(() => itemsWithError(alerts), [alerts]);
@@ -42,8 +44,16 @@ export function Workspace() {
     <div className="planner">
       <div>
         {notice && <div className="alert err-box planner-notice" role="alert">{notice} <button type="button" className="btn sm ghost" onClick={clearNotice}>OK</button></div>}
-        <Canvas2D errorIds={errorIds} />
-        <p className="small muted" style={{ margin: "8px 0 0" }}>Arraste os móveis na planta, pince com dois dedos para dar zoom. Quadriculado: 50 cm.</p>
+        <div className="seg" role="group" aria-label="Tipo de visualização" style={{ marginBottom: 8 }}>
+          <button type="button" aria-pressed={view === "2d"} onClick={() => setView("2d")}>Planta 2D</button>
+          <button type="button" aria-pressed={view === "3d"} onClick={() => setView("3d")}>Ver em 3D</button>
+        </div>
+        {view === "2d" ? (
+          <>
+            <Canvas2D errorIds={errorIds} />
+            <p className="small muted" style={{ margin: "8px 0 0" }}>Arraste os móveis na planta, pince com dois dedos para dar zoom. Quadriculado: 50 cm.</p>
+          </>
+        ) : <View3D errorIds={errorIds} />}
       </div>
       <aside className="planner-side" aria-label="Painel do planejador">
         <div role="tablist" aria-label="Seções" className="planner-tabs">

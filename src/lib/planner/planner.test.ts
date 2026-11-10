@@ -228,3 +228,35 @@ describe("ids", () => {
     try { expect(newId()).toMatch(UUID_RE); } finally { Object.defineProperty(globalThis, "crypto", orig); }
   });
 });
+
+import { partsFor, shade, worldPose } from "./model3d";
+
+describe("modelo 3D", () => {
+  it("todas as peças de todos os produtos ficam dentro das medidas reais", () => {
+    for (const p of products) {
+      const w = p.dims.w / 100, h = p.dims.h / 100, d = p.dims.d / 100, e = 1e-6;
+      const parts = partsFor(p);
+      expect(parts.length, p.slug).toBeGreaterThan(0);
+      for (const { size, pos } of parts) {
+        for (const v of [...size, ...pos]) expect(Number.isFinite(v), p.slug).toBe(true);
+        expect(pos[0] - size[0] / 2, p.slug).toBeGreaterThanOrEqual(-w / 2 - e); expect(pos[0] + size[0] / 2, p.slug).toBeLessThanOrEqual(w / 2 + e);
+        expect(pos[2] - size[2] / 2, p.slug).toBeGreaterThanOrEqual(-d / 2 - e); expect(pos[2] + size[2] / 2, p.slug).toBeLessThanOrEqual(d / 2 + e);
+        expect(pos[1] - size[1] / 2, p.slug).toBeGreaterThanOrEqual(-e); expect(pos[1] + size[1] / 2, p.slug).toBeLessThanOrEqual(h + e);
+      }
+    }
+  });
+  it("a altura total do móvel é a altura do cadastro", () => {
+    for (const p of products) {
+      const top = Math.max(...partsFor(p).map((x) => x.pos[1] + x.size[1] / 2));
+      expect(top, p.slug).toBeCloseTo(p.dims.h / 100, 5);
+    }
+  });
+  it("planta (x,y) vira mundo (x,z) em metros; giro horário vira anti-horário", () => {
+    expect(worldPose({ x: 250, y: 100, rot: 0 })).toEqual({ position: [2.5, 0, 1], rotationY: -0 });
+    expect(worldPose({ x: 0, y: 0, rot: 90 }).rotationY).toBeCloseTo(-Math.PI / 2);
+  });
+  it("shade escurece sem estourar", () => {
+    expect(shade("#ffffff", 0.5)).toBe("#808080");
+    expect(shade("#000000")).toBe("#000000");
+  });
+});
